@@ -16,14 +16,12 @@ let selectedImages = [];
 let imageOrder = [];
 
 function shuffleArray(arr) {
-  // Fisher-Yates shuffle
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
 }
 
-// Initialize images
 function init() {
   selectedImages = [];
   result.textContent = "";
@@ -31,18 +29,27 @@ function init() {
   verifyBtn.style.display = "none";
   message.textContent = "Please click on the identical tiles to verify that you are not a robot.";
 
-  // Pick one random image to duplicate
+  // Pick a random image to duplicate
   const duplicateIndex = Math.floor(Math.random() * images.length);
-  imageOrder = [...images, images[duplicateIndex]];
 
+  // Create image objects with class names
+  imageOrder = images.map((src, idx) => {
+    return { src, className: `img${idx + 1}` };
+  });
+
+  // Add the duplicate
+  imageOrder.push({ src: images[duplicateIndex], className: `img${duplicateIndex + 1}` });
+
+  // Shuffle images
   shuffleArray(imageOrder);
 
   // Render images
   container.innerHTML = "";
-  imageOrder.forEach((src, index) => {
+  imageOrder.forEach((imgObj, index) => {
     const img = document.createElement("img");
-    img.src = src;
-    img.dataset.index = index; // store index
+    img.src = imgObj.src;
+    img.classList.add(imgObj.className);
+    img.dataset.index = index;
     img.addEventListener("click", handleClick);
     container.appendChild(img);
   });
@@ -54,20 +61,13 @@ function handleClick(e) {
   // Prevent selecting same image twice
   if (selectedImages.includes(img)) return;
 
-  // Highlight selection
   img.classList.add("selected");
   selectedImages.push(img);
 
-  if (selectedImages.length === 1) {
-    resetBtn.style.display = "inline-block";
-  }
-
-  if (selectedImages.length === 2) {
-    verifyBtn.style.display = "inline-block";
-  }
+  if (selectedImages.length === 1) resetBtn.style.display = "inline-block";
+  if (selectedImages.length === 2) verifyBtn.style.display = "inline-block";
 }
 
-// Reset button
 resetBtn.addEventListener("click", () => {
   selectedImages.forEach(img => img.classList.remove("selected"));
   selectedImages = [];
@@ -76,7 +76,6 @@ resetBtn.addEventListener("click", () => {
   result.textContent = "";
 });
 
-// Verify button
 verifyBtn.addEventListener("click", () => {
   const [first, second] = selectedImages;
   if (first.src === second.src) {
@@ -87,5 +86,4 @@ verifyBtn.addEventListener("click", () => {
   verifyBtn.style.display = "none";
 });
 
-// Initialize on page load
 window.onload = init;
